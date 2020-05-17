@@ -1,0 +1,111 @@
+package com.example.chapter9_explain3;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
+import android.media.Image;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+
+public class MainActivity extends AppCompatActivity {
+
+    ImageButton zoomIn, zoomOut, rotate, colorOut;
+    MyGraphicView graphicView;
+    static float scaleX = 1, scaleY = 1;
+    static float angle = 0;
+    static float satur = 1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        LinearLayout pictureLayout = (LinearLayout)findViewById(R.id.pictureLayout);
+        graphicView = (MyGraphicView) new MyGraphicView(this);
+        pictureLayout.addView(graphicView);
+
+        clickIcons();
+    }
+
+    private void clickIcons(){
+        zoomIn = (ImageButton)findViewById(R.id.zoomIn);
+        zoomIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scaleX += 0.2f;
+                scaleY += 0.2f;
+                graphicView.invalidate();
+            }
+        });
+
+        zoomOut = (ImageButton)findViewById(R.id.zoomOut);
+        zoomOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scaleX -= 0.2f;
+                scaleY -= 0.2f;
+                graphicView.invalidate();
+            }
+        });
+
+        rotate = (ImageButton)findViewById(R.id.rotate);
+        rotate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                angle +=20;
+                graphicView.invalidate();
+            }
+        });
+
+        colorOut = (ImageButton)findViewById(R.id.colorOut);
+        colorOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(satur == 0)
+                    satur = 1;
+                else
+                    satur = 0;
+                graphicView.invalidate();
+            }
+        });
+    }
+
+
+    private static class MyGraphicView extends View {
+        public MyGraphicView(Context context){super(context);}
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            int cenX = this.getWidth()/2;
+            int cenY = this.getHeight()/2;
+            canvas.scale(scaleX,scaleY,cenX, cenY);
+            canvas.rotate(angle, cenX, cenY);
+
+            Paint paint = new Paint();
+            ColorMatrix cm = new ColorMatrix();
+
+            if(satur == 0)
+                cm.setSaturation(satur);
+
+            paint.setColorFilter(new ColorMatrixColorFilter(cm));
+
+            Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.pikachu);
+            int picX = (this.getWidth() - picture.getWidth()) /2;
+            int picY = (this.getHeight() - picture.getHeight()) /2;
+
+            canvas.drawBitmap(picture, picX, picY, paint);
+
+            picture.recycle();
+        }
+    }
+}
